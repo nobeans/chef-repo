@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-java_home = node['java']['oracle']['java_home']
+java_home = node['java']['java_home']
 url = node['java']['oracle']['url']
 checksum = node['java']['oracle']['checksum']
 
