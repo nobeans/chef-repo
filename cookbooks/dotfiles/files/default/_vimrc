@@ -1,0 +1,423 @@
+"-------------------------------------------------------------------------------
+" 基本設定 Basics
+"-------------------------------------------------------------------------------
+let mapleader = ","              " キーマップリーダー
+set scrolloff=5                  " スクロール時の余白確保
+set textwidth=0                  " 一行に長い文章を書いていても自動折り返しをしない
+set nobackup                     " バックアップ取らない
+set autoread                     " 他で書き換えられたら自動で読み直す
+set noswapfile                   " スワップファイル作らない
+set hidden                       " 編集中でも他のファイルを開けるようにする
+set backspace=indent,start       " バックスペースでなんでも消せるように
+set formatoptions=lmoq           " テキスト整形オプション，マルチバイト系を追加
+set vb t_vb=                     " ビープをならさない
+set browsedir=current
+set whichwrap=b,s,[,]            " カーソルを行頭、行末で止まらないようにする(h,lを除く)
+set showcmd                      " コマンドをステータス行に表示
+set showmode                     " 現在のモードを表示
+set viminfo='50,<1000,s100,\"50  " viminfoファイルの設定
+set modelines=0                  " モードラインは無効
+
+" ターミナルでマウスを使用できるようにする
+set mouse=a
+set ttymouse=xterm2
+
+" vimrcの編集と反映
+nnoremap <Space>, :<C-u>vi $MYVIMRC<CR>
+nnoremap <Space>. :<C-u>source $MYVIMRC<CR>
+nnoremap <Space>< :<C-u>vi $MYVIMRC-local<CR>
+nnoremap <Space>> :<C-u>source $MYVIMRC-local<CR>
+
+
+"-------------------------------------------------------------------------------
+" カラー関連 Colors
+"-------------------------------------------------------------------------------
+syntax on
+colorscheme desert
+
+
+"-------------------------------------------------------------------------------
+" ステータスライン StatusLine
+"-------------------------------------------------------------------------------
+set laststatus=2 " 常にステータスラインを表示
+
+"ステータスラインのフォーマット
+"set statusline=%=<%B>%m%r%h%w%q[%{(&fenc!=''?&fenc:&enc)}:%{&ff}][%Y][%04l,%04v][%p%%]
+set statusline=%=<%B>%m%r%h%w[%{(&fenc!=''?&fenc:&enc)}:%{&ff}][%Y][%04l,%04v][%p%%]
+
+" 入力モード時、ステータスラインのカラーを変更
+highlight StatusLine guifg=black guibg=white gui=none ctermfg=black ctermbg=lightgray cterm=none
+augroup InsertHook
+  autocmd! InsertHook
+  autocmd InsertEnter * highlight StatusLine guifg=white guibg=darkblue gui=none
+  autocmd InsertLeave * highlight StatusLine guifg=black guibg=gray     gui=none
+  autocmd InsertEnter * highlight StatusLine ctermfg=white ctermbg=darkblue  cterm=none
+  autocmd InsertLeave * highlight StatusLine ctermfg=black ctermbg=lightgray cterm=none
+augroup END
+
+
+"-------------------------------------------------------------------------------
+" 表示 Appearance
+"-------------------------------------------------------------------------------
+set showmatch         " 括弧の対応をハイライト
+set number            " 行番号表示
+set list              " 不可視文字表示
+set listchars=tab:>.,trail:_,extends:>,precedes:< " 不可視文字の表示形式
+set display=uhex      " 印字不可能文字を16進数で表示
+
+" 全角スペースの表示
+highlight ZenkakuSpace cterm=underline ctermfg=lightblue guibg=darkgray
+match ZenkakuSpace /　/
+
+" カーソル行をハイライト
+set cursorline
+
+" コマンド実行中は再描画しない
+set lazyredraw
+
+" 高速ターミナル接続を行う
+set ttyfast
+
+
+"-------------------------------------------------------------------------------
+" インデント Indent
+"-------------------------------------------------------------------------------
+set autoindent   " 自動でインデント
+set smartindent  " 新しい行を開始したときに、新しい行のインデントを現在行と同じ量にする。
+set cindent      " Cプログラムファイルの自動インデントを始める
+
+" softtabstopはTabキー押し下げ時の挿入される空白の量，0の場合はtabstopと同じ，BSにも影響する
+set tabstop=4
+set shiftwidth=4
+set softtabstop=0
+
+" Tabキーを空白に変換
+set expandtab
+
+"ファイルタイプの検索を有効にする
+filetype plugin on
+
+"そのファイルタイプにあわせたインデントを利用する
+filetype indent on
+
+" 一部のインデントを上書き
+augroup Indent
+  autocmd! Indent
+  autocmd FileType ruby,xml,html,xhtml,gsp,jsp set tabstop=2 shiftwidth=2 softtabstop=0
+augroup END
+
+
+"-------------------------------------------------------------------------------
+" 検索設定 Search
+"-------------------------------------------------------------------------------
+set wrapscan   " 最後まで検索したら先頭へ戻る
+set noignorecase " 大文字小文字無視しない
+"set smartcase  " 検索文字列に大文字が含まれている場合は区別して検索する
+set incsearch  " インクリメンタルサーチ
+set hlsearch   " 検索文字をハイライト
+
+" Escの2回押しでハイライト消去
+nmap <silent> <Esc><Esc> :<C-u>nohlsearch<CR><Esc>
+
+" Ctrl+E カーソル上の単語を置換する
+nnoremap <C-e><C-e> viwy:<C-u><C-F>a%s/\<<Esc>p$a\>/
+" Ctrl+E 選択範囲を置換する
+vnoremap <C-e><C-e> y:<C-u><C-F>a%s/\<<Esc>p$a\>/
+
+" 検索時の「/」を自動的にエスケープする
+cnoremap <expr> / getcmdtype() == '/' ? '\/' : '/'
+
+" なぜかどのスキーマも検索結果が見づらいので調整
+highlight Search ctermfg=black ctermbg=yellow
+highlight Search guifg=black guibg=yellow
+
+" Help ----------------------------------------------
+" ヘルプは垂直分割で右側に開く
+command! -nargs=1 Help :rightbelow vert help <args>
+" Ctrl-iでヘルプ
+nnoremap <C-i>  :<C-u>Help<Space>
+" カーソル下のキーワードをヘルプでひく
+nnoremap <C-i><C-i> :<C-u>Help<Space><C-r><C-w><CR>
+" ビジュアルモードで選択したキーワードをヘルプでひく
+vnoremap <silent> <C-i><C-i> y:<C-u><C-F>iHelp <Esc>p<CR>
+
+" Quickfix ------------------------------------------
+" リストを開く
+map <silent> <C-c><C-c> :<C-u>cwindow<CR>
+" リストのファイルの対象行を開く
+map <silent> <C-c><C-n> :<C-u>cnext<CR>
+map <silent> <C-c><C-p> :<C-u>cprevious<CR>
+" 一時的に閉じる
+map <silent> <C-c><C-w> :<C-u>cclose<CR>
+" リストの内容をリセットして閉じる
+map <silent> <C-c><C-r> :<C-u>cexpr ""<CR>:<C-u>cw<CR>
+
+
+"-------------------------------------------------------------------------------
+" 移動設定 Move
+"-------------------------------------------------------------------------------
+" カーソルを表示行で移動する
+nnoremap h <Left>
+nnoremap j gj
+nnoremap k gk
+nnoremap l <Right>
+nnoremap <Down> gj
+nnoremap <Up>   gk
+
+" CTRL-hjklでウィンドウ移動
+nnoremap <C-j> <C-w>j
+nnoremap <C-k> <C-w>k
+nnoremap <C-l> <C-w>l
+nnoremap <C-h> <C-w>h
+
+"フレームサイズを怠惰に変更する
+map <kPlus> <C-W>+
+map <kMinus> <C-W>-
+
+" 前回終了したカーソル行に移動
+autocmd BufReadPost * if line("'\"") > 1 && line("'\"") <= line("$") | exe "normal g`\"" | endif
+
+" 最後に変更されたテキストを選択する
+nnoremap gm  `[v`]
+vnoremap gm :<C-u>normal gm<CR>
+onoremap gm :<C-u>normal gm<CR>
+
+" カーソル位置の単語をyankする
+nnoremap vy viwy
+nnoremap vY vawy
+
+" 括弧まで移動する
+onoremap ) t)
+onoremap ( t(
+vnoremap ) t)
+vnoremap ( t(
+
+" 矩形選択で自由に移動する
+set virtualedit+=block
+
+" ビジュアルモード時vで改行を含めずに一行を選択行
+vnoremap v <Esc>^v$h
+
+" バッファ操作サポート
+nnoremap <C-b><C-n> :<C-u>bn<CR>
+nnoremap <C-b>n     :<C-u>bn<CR>
+nnoremap <C-b><C-p> :<C-u>bp<CR>
+nnoremap <C-b>p     :<C-u>bp<CR>
+nnoremap <C-b><C-w> :<C-u>bw<CR>
+nnoremap <C-b>w     :<C-u>bw<CR>
+nnoremap <C-b><C-c> :<C-u>bw<CR>
+nnoremap <C-b>c     :<C-u>bw<CR>
+nnoremap <C-b><C-b> :<C-u>b#<CR>
+
+" タブ操作サポート
+"nnoremap <C-t>      <Nop>
+"nnoremap <C-t><C-p> :<C-u>tabprevious<CR>
+"nnoremap <C-t>p     :<C-u>tabprevious<CR>
+"nnoremap <C-t><C-n> :<C-u>tabnext<CR>
+"nnoremap <C-t>n     :<C-u>tabnext<CR>
+"nnoremap <C-t><C-w> :<C-u>tabclose<CR>
+"nnoremap <C-t>w     :<C-u>tabclose<CR>
+"nnoremap <C-t>c     :<C-u>tabnew<CR>
+"nnoremap <C-t>o     :<C-u>tabonly<CR>
+
+" タグ操作サポート
+"nnoremap t   <Nop>
+"nnoremap tt  <C-]>
+"nnoremap tj  :<C-u>tag<CR>
+"nnoremap tk  :<C-u>pop<CR>
+"nnoremap tl  :<C-u>tags<CR>
+
+
+"-------------------------------------------------------------------------------
+" エンコーディング関連 Encoding
+"-------------------------------------------------------------------------------
+" デフォルトエンコーディング
+set encoding=utf-8
+if has('win32')
+  set termencoding=sjis
+else
+  set termencoding=utf-8
+endif
+"set fileencoding=utf-8
+
+" 改行コードの自動認識
+set fileformats=unix,dos,mac
+
+" 文字コードの自動認識
+" from ずんWiki http://www.kawaz.jp/pukiwiki/?vim#content_1_7
+if &encoding !=# 'utf-8'
+  set encoding=japan
+  set fileencoding=japan
+endif
+if has('iconv')
+  let s:enc_euc = 'euc-jp'
+  let s:enc_jis = 'iso-2022-jp'
+  " iconvがeucJP-msに対応しているかをチェック
+  if iconv("\x87\x64\x87\x6a", 'cp932', 'eucjp-ms') ==# "\xad\xc5\xad\xcb"
+    let s:enc_euc = 'eucjp-ms'
+    let s:enc_jis = 'iso-2022-jp-3'
+  " iconvがJISX0213に対応しているかをチェック
+  elseif iconv("\x87\x64\x87\x6a", 'cp932', 'euc-jisx0213') ==# "\xad\xc5\xad\xcb"
+    let s:enc_euc = 'euc-jisx0213'
+    let s:enc_jis = 'iso-2022-jp-3'
+  endif
+  " fileencodingsを構築
+  if &encoding ==# 'utf-8'
+    let s:fileencodings_default = &fileencodings
+    let &fileencodings = s:enc_jis .','. s:enc_euc .',cp932'
+    let &fileencodings = &fileencodings .','. s:fileencodings_default
+    unlet s:fileencodings_default
+  else
+    let &fileencodings = &fileencodings .','. s:enc_jis
+    set fileencodings+=utf-8,ucs-2le,ucs-2
+    if &encoding =~# '^\(euc-jp\|euc-jisx0213\|eucjp-ms\)$'
+      set fileencodings+=cp932
+      set fileencodings-=euc-jp
+      set fileencodings-=euc-jisx0213
+      set fileencodings-=eucjp-ms
+      let &encoding = s:enc_euc
+      let &fileencoding = s:enc_euc
+    else
+      let &fileencodings = &fileencodings .','. s:enc_euc
+    endif
+  endif
+  " 定数を処分
+  unlet s:enc_euc
+  unlet s:enc_jis
+endif
+" 日本語を含まない場合は fileencoding に encoding を使うようにする
+if has('autocmd')
+  function! AU_ReCheck_FENC()
+    if &fileencoding =~# 'iso-2022-jp' && search("[^\x01-\x7e]", 'n') == 0
+      let &fileencoding=&encoding
+    endif
+  endfunction
+  autocmd BufReadPost * call AU_ReCheck_FENC()
+endif
+
+" □とか○の文字があってもカーソル位置がずれないようにする
+if exists('&ambiwidth')
+  set ambiwidth=double
+endif
+
+" ワイルドカードで表示するときに優先度を低くする拡張子
+set suffixes=.bak,~,.swp,.o,.info,.aux,.log,.dvi,.bbl,.blg,.brf,.cb,.ind,.idx,.ilg,.inx,.out,.toc,.class
+
+" 指定文字コードで強制的にファイルを開く
+command! Cp932 edit ++enc=cp932
+command! Eucjp edit ++enc=euc-jp
+command! Iso2022jp edit ++enc=iso-2022-jp
+command! Utf8 edit ++enc=utf-8
+command! Jis Iso2022jp
+command! Sjis Cp932
+
+
+"-------------------------------------------------------------------------------
+" 補完・履歴 Complete
+"-------------------------------------------------------------------------------
+"set wildmenu               " コマンド補完を強化
+"set wildchar=<tab>         " コマンド補完を開始するキー
+set wildmode=list:full     " リスト表示，最長マッチ
+set history=1000           " コマンド・検索パターンの履歴数
+set complete+=k            " 補完に辞書ファイル追加
+
+" 色をみやすく
+highlight Pmenu     ctermbg=darkgray cterm=none guibg=darkgray gui=none
+highlight PmenuSel  ctermbg=darkblue cterm=none guibg=darkblue gui=none
+highlight PmenuSbar ctermbg=black    cterm=none guibg=black    gui=none
+
+
+"-------------------------------------------------------------------------------
+" 編集関連 Edit
+"-------------------------------------------------------------------------------
+" insertモードを抜けるとIMEオフ
+set noimdisable
+set iminsert=0 imsearch=0
+set noimcmdline
+inoremap <silent> <Esc> <Esc>:set iminsert=0<CR>
+
+" XMLの閉タグを自動挿入
+augroup MyXML
+  autocmd! MyXML
+  autocmd Filetype xml,jsp,gsp,html,htm inoremap <buffer> </ </<C-x><C-o>
+augroup END
+
+" Insert mode中で単語単位/行単位の削除をアンドゥ可能にする
+inoremap <C-u> <C-g>u<C-u>
+inoremap <C-w> <C-g>u<C-w>
+
+" ペーストモード(自動インデントをOFF/ON)
+nnoremap <Space>a :set paste<CR>
+nnoremap <Space>A :set nopaste<CR>
+
+" 日時の入力補助
+inoremap <expr> ,df strftime('%Y-%m-%d %H:%M:%S')
+inoremap <expr> ,dd strftime('%Y-%m-%d')
+inoremap <expr> ,dt strftime('%H:%M:%S')
+
+" 箇条書き(簡易版)
+nnoremap <C-_> ^i- <Esc>$a
+inoremap <C-_> <Esc>^i- <Esc>$a
+
+
+"-------------------------------------------------------------------------------
+" その他 Misc
+"-------------------------------------------------------------------------------
+set notitle
+set linespace=2 " 行間
+
+" sbufferで、すでにアクティブな場合は新たにsplitしない
+set switchbuf=useopen
+
+" カレントディレクトリを自動的に移動
+"augroup BufferAu
+"  autocmd! BufferAu
+"  autocmd BufNewFile,BufRead,BufEnter * if isdirectory(expand("%:p:h")) | cd %:p:h | endif
+"augroup END
+
+" G*
+autocmd BufNewFile,BufRead,BufEnter *.gradle setf groovy
+autocmd BufNewFile,BufRead,BufEnter *.gsp setf jsp
+
+" C/Migemo
+set incsearch
+if has("migemo")
+    set migemo
+"    map / g/
+"    map ? g?
+endif
+
+" 現在行の行番号を返す
+function! Cn()
+  return line('.')
+endfunction
+
+" 前行の行番号を返す
+function! Pn()
+  return line('.') - 1
+endfunction
+
+" 現在行のテキストを返す
+function! Cl()
+  return getline('.')
+endfunction
+
+" 現在行のテキストを返す
+function! Pl()
+  return getline(Pn())
+endfunction
+
+" 現在行でパターンにマッチしたテキストを返す
+function! Cp(pattern)
+  return matchstr(Cl(), a:pattern)
+endfunction
+
+" 前行でパターンにマッチしたテキストを返す
+function! Pp(pattern)
+  return matchstr(Pl(), a:pattern)
+endfunction
+
+" submatch()の短縮
+function! Sm(n)
+  return submatch(a:n)
+endfunction
