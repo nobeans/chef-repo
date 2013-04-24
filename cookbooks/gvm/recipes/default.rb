@@ -24,7 +24,7 @@ bash "install gvm" do
   user user
   group user
   cwd home_dir
-  environment "HOME" => home_dir, "JAVA_HOME" => node['gvm']['java_home']
+  environment "HOME" => home_dir
   code <<-EOC
     source /etc/profile.d/jdk.sh && curl -s get.gvmtool.net | bash
   EOC
